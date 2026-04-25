@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora de Precios | Artículos de Cuero</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0f0e0c;
+      --surface: #1a1814;
+      --border: #2e2b26;
+      --accent: #c8913a;
+      --accent-dim: #7a5520;
+      --text: #e8e0d0;
+      --muted: #6b6355;
+      --success: #4caf7d;
+      --error: #e05c5c;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(200,145,58,0.03) 40px, rgba(200,145,58,0.03) 41px),
+        repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(200,145,58,0.03) 40px, rgba(200,145,58,0.03) 41px);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      line-height: 1;
+      text-shadow: 0 0 40px rgba(200,145,58,0.3);
+    }
+
+    header p {
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-top: 0.4rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      width: 100%;
+      max-width: 560px;
+      padding: 2.5rem 2rem;
+      position: relative;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-dim), var(--accent), var(--accent-dim));
+    }
+
+    .section-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.45rem;
+    }
+
+    input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.95rem;
+      padding: 0.7rem 1rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -moz-appearance: textfield;
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(200,145,58,0.12);
+    }
+
+    input.invalid {
+      border-color: var(--error);
+      box-shadow: 0 0 0 2px rgba(224,92,92,0.1);
+    }
+
+    .error-msg {
+      font-size: 0.65rem;
+      color: var(--error);
+      letter-spacing: 0.1em;
+      margin-top: 0.3rem;
+      min-height: 1em;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 1.8rem 0;
+    }
+
+    button {
+      width: 100%;
+      background: var(--accent);
+      color: #0f0e0c;
+      border: none;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem;
+      letter-spacing: 0.2em;
+      padding: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      background: #d9a24f;
+      box-shadow: 0 4px 20px rgba(200,145,58,0.35);
+    }
+
+    button:active { transform: translateY(1px); }
+
+    button:disabled {
+      background: var(--accent-dim);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Result panel */
+    .result {
+      margin-top: 1.8rem;
+      border: 1px solid var(--border);
+      padding: 1.4rem 1.2rem;
+      display: none;
+      animation: fadeIn 0.35s ease;
+    }
+
+    .result.visible { display: block; }
+
+    .result.success { border-color: var(--success); }
+    .result.error   { border-color: var(--error); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-title {
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      padding: 0.3rem 0;
+      border-bottom: 1px dashed var(--border);
+      color: var(--muted);
+    }
+
+    .result-row span:last-child { color: var(--text); }
+
+    .result-final {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-top: 1rem;
+    }
+
+    .result-final .label {
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .result-final .amount {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.4rem;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+
+    .result-final.error-final .label,
+    .result-final.error-final .amount { color: var(--error); }
+
+    .status-badge {
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      padding: 0.2rem 0.6rem;
+      border-radius: 0;
+      font-weight: 500;
+      text-transform: uppercase;
+      display: inline-block;
+      margin-bottom: 0.8rem;
+    }
+
+    .badge-200 { background: rgba(76,175,125,0.15); color: var(--success); border: 1px solid var(--success); }
+    .badge-404 { background: rgba(224,92,92,0.15); color: var(--error);   border: 1px solid var(--error); }
+
+    .loader {
+      display: none;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(15,14,12,0.4);
+      border-top-color: #0f0e0c;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto;
+    }
+
+    .loader.active { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    footer {
+      margin-top: 2rem;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Precio Final</h1>
+    <p>Calculadora · IVA &amp; Descuento · Artículos de Cuero</p>
+  </header>
+
+  <div class="card">
+    <!-- Datos del Producto -->
+    <div class="section-label">Datos del Producto</div>
+
+    <div class="form-group">
+      <label for="codigo">Código del Producto</label>
+      <input type="text" id="codigo" placeholder="Ej: ZAP-001A" maxlength="30" />
+      <div class="error-msg" id="err-codigo"></div>
+    </div>
+
+    <div class="form-group">
+      <label for="nombre">Nombre del Producto</label>
+      <input type="text" id="nombre" placeholder="Ej: Zapato de Cuero" maxlength="80" />
+      <div class="error-msg" id="err-nombre"></div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- Valores -->
+    <div class="section-label">Valores</div>
+
+    <div class="form-group">
+      <label for="costoBase">Costo Base ($)</label>
+      <input type="text" id="costoBase" placeholder="Ej: 100000" inputmode="decimal" />
+      <div class="error-msg" id="err-costoBase"></div>
+    </div>
+
+    <div class="form-group">
+      <label for="iva">IVA (%)</label>
+      <input type="text" id="iva" placeholder="Ej: 19" inputmode="decimal" />
+      <div class="error-msg" id="err-iva"></div>
+    </div>
+
+    <div class="form-group">
+      <label for="descuento">Descuento (%)</label>
+      <input type="text" id="descuento" placeholder="Ej: 15" inputmode="decimal" />
+      <div class="error-msg" id="err-descuento"></div>
+    </div>
+
+    <button id="btnCalcular" onclick="calcular()">
+      <span id="btn-text">Calcular</span>
+      <span class="loader" id="loader"></span>
+    </button>
+
+    <!-- Resultado -->
+    <div class="result" id="resultado">
+      <div class="result-title">Respuesta del Microservicio</div>
+      <div id="result-body"></div>
+    </div>
+  </div>
+
+  <footer>POST :3010 /calcularValorFinal/ · Swagger /api-docs</footer>
+
+  <script>
+    const API_URL = 'https://calculo-iva-descuento.onrender.com/calcularValorFinal/';
+
+    function isStrictNumber(val) {
+      // Rechaza strings vacíos, la letra 'e', Infinity, NaN
+      if (typeof val === 'string' && val.toLowerCase().includes('e')) return false;
+      const n = Number(val);
+      return val !== '' && !isNaN(n) && isFinite(n);
+    }
+
+    function validateForm() {
+      let valid = true;
+
+      // Código: alfanumérico
+      const codigo = document.getElementById('codigo').value.trim();
+      const errCodigo = document.getElementById('err-codigo');
+      const elCodigo = document.getElementById('codigo');
+      if (!codigo) {
+        errCodigo.textContent = 'El código es obligatorio.';
+        elCodigo.classList.add('invalid');
+        valid = false;
+      } else if (!/^[a-zA-Z0-9\-_]+$/.test(codigo)) {
+        errCodigo.textContent = 'Solo letras, números, guiones y guiones bajos.';
+        elCodigo.classList.add('invalid');
+        valid = false;
+      } else {
+        errCodigo.textContent = '';
+        elCodigo.classList.remove('invalid');
+      }
+
+      // Nombre: solo letras y espacios
+      const nombre = document.getElementById('nombre').value.trim();
+      const errNombre = document.getElementById('err-nombre');
+      const elNombre = document.getElementById('nombre');
+      if (!nombre) {
+        errNombre.textContent = 'El nombre es obligatorio.';
+        elNombre.classList.add('invalid');
+        valid = false;
+      } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(nombre)) {
+        errNombre.textContent = 'Solo se permiten letras y espacios.';
+        elNombre.classList.add('invalid');
+        valid = false;
+      } else {
+        errNombre.textContent = '';
+        elNombre.classList.remove('invalid');
+      }
+
+      // Costo Base
+      const costoBase = document.getElementById('costoBase').value.trim();
+      const errCosto = document.getElementById('err-costoBase');
+      const elCosto = document.getElementById('costoBase');
+      if (!costoBase || !isStrictNumber(costoBase)) {
+        errCosto.textContent = 'Ingrese un número válido (ej: 100000).';
+        elCosto.classList.add('invalid');
+        valid = false;
+      } else {
+        errCosto.textContent = '';
+        elCosto.classList.remove('invalid');
+      }
+
+      // IVA
+      const iva = document.getElementById('iva').value.trim();
+      const errIva = document.getElementById('err-iva');
+      const elIva = document.getElementById('iva');
+      if (!iva || !isStrictNumber(iva)) {
+        errIva.textContent = 'Ingrese un porcentaje válido (ej: 19).';
+        elIva.classList.add('invalid');
+        valid = false;
+      } else {
+        errIva.textContent = '';
+        elIva.classList.remove('invalid');
+      }
+
+      // Descuento
+      const descuento = document.getElementById('descuento').value.trim();
+      const errDesc = document.getElementById('err-descuento');
+      const elDesc = document.getElementById('descuento');
+      if (descuento === '' || !isStrictNumber(descuento)) {
+        errDesc.textContent = 'Ingrese un porcentaje válido (ej: 15 o 0).';
+        elDesc.classList.add('invalid');
+        valid = false;
+      } else {
+        errDesc.textContent = '';
+        elDesc.classList.remove('invalid');
+      }
+
+      return valid;
+    }
+
+    async function calcular() {
+      if (!validateForm()) return;
+
+      const btn = document.getElementById('btnCalcular');
+      const loader = document.getElementById('loader');
+      const btnText = document.getElementById('btn-text');
+      const resultado = document.getElementById('resultado');
+
+      btn.disabled = true;
+      btnText.style.display = 'none';
+      loader.classList.add('active');
+
+      const payload = {
+        valorBase: Number(document.getElementById('costoBase').value),
+        iva: Number(document.getElementById('iva').value),
+        descuento: Number(document.getElementById('descuento').value),
+      };
+
+      try {
+        console.log('📤 Request enviado a:', API_URL);
+        console.log('📦 Payload:', payload);
+
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+
+        console.log('📥 HTTP Status:', res.status);
+        console.log('📋 Response:', data);
+
+        if (!res.ok) {
+          console.warn('⚠️ Error del servidor - Código:', res.status, data);
+        }
+
+        renderResult(data);
+      } catch (err) {
+        console.error('❌ Error de conexión:', err);
+        renderResult({
+          codigoHTTP: 404,
+          Titulo: 'Valor No Encontrado',
+          Valor: 0,
+          _clientError: 'No se pudo conectar al microservicio.',
+        });
+      } finally {
+        btn.disabled = false;
+        btnText.style.display = '';
+        loader.classList.remove('active');
+      }
+    }
+
+    function fmt(n) {
+      return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n);
+    }
+
+    function renderResult(data) {
+      const el = document.getElementById('resultado');
+      const body = document.getElementById('result-body');
+      const isOk = data.codigoHTTP === 200;
+
+      el.className = 'result visible ' + (isOk ? 'success' : 'error');
+
+      if (isOk) {
+        const montoDesc = data.valorBase * data.descuento / 100;
+        const precioDesc = data.valorBase - montoDesc;
+        const montoIva = precioDesc * data.iva / 100;
+        body.innerHTML = `
+          <span class="status-badge badge-200">HTTP ${data.codigoHTTP} OK</span>
+          <div class="result-row"><span>Precio original</span><span>${fmt(data.valorBase)}</span></div>
+          <div class="result-row"><span>Descuento (${data.descuento}%)</span><span>- ${fmt(montoDesc)}</span></div>
+          <div class="result-row"><span>Precio con descuento</span><span>${fmt(precioDesc)}</span></div>
+          <div class="result-row"><span>IVA (${data.iva}%) sobre precio descontado</span><span>+ ${fmt(montoIva)}</span></div>
+          <div class="result-final">
+            <span class="label">${data.Titulo}</span>
+            <span class="amount">${fmt(data.Valor)}</span>
+          </div>`;
+      } else {
+        const badgeLabel = data.codigoHTTP === 400 ? 'BAD REQUEST' : 'NOT FOUND';
+        const mensajeExtra = data.Mensaje ? `<p style="font-size:0.75rem;color:var(--muted);margin-bottom:0.8rem">${data.Mensaje}</p>` : '';
+        const clientError = data._clientError ? `<p style="font-size:0.75rem;color:var(--muted);margin-bottom:0.8rem">${data._clientError}</p>` : '';
+        body.innerHTML = `
+          <span class="status-badge badge-404">HTTP ${data.codigoHTTP} ${badgeLabel}</span>
+          ${mensajeExtra}${clientError}
+          <div class="result-final error-final">
+            <span class="label">${data.Titulo}</span>
+            <span class="amount">${data.Valor}</span>
+          </div>`;
+      }
+    }
+  </script>
+</body>
+</html>
