@@ -20,7 +20,7 @@ const swaggerOptions = {
     },
     servers: [
       { url: `http://localhost:${PORT}`, description: 'Local' },
-      { url: 'https://tu-app.onrender.com', description: 'Producción (Render)' },
+      { url: 'https://calculo-iva-descuento.onrender.com', description: 'Producción (Render)' },
     ],
   },
   apis: ['./index.js'],
